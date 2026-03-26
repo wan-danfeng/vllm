@@ -529,7 +529,9 @@ class GPUModelRunner(
                 from vllm.v1.spec_decode.ngram_proposer import NgramProposer
 
                 self.drafter = NgramProposer(self.vllm_config)
-            elif self.speculative_config.uses_draft_model():
+
+            elif (self.speculative_config.uses_draft_model()
+                  or self.speculative_config.uses_universal_draft()):
                 self.drafter = DraftModelProposer(
                     vllm_config=self.vllm_config,
                     device=self.device,
@@ -4231,7 +4233,7 @@ class GPUModelRunner(
             )
             use_gpu_toks = (
                 spec_config.use_eagle()
-                or spec_config.uses_draft_model()
+                or spec_config.uses_draft_model() or spec_config.uses_universal_draft()
                 or spec_config.uses_extract_hidden_states()
             ) and not spec_config.disable_padded_drafter_batch
             if use_gpu_toks:
@@ -4636,6 +4638,7 @@ class GPUModelRunner(
             spec_config.use_eagle()
             or spec_config.use_dflash()
             or spec_config.uses_draft_model()
+            or spec_config.uses_universal_draft():
         ):
             assert isinstance(
                 self.drafter, EagleProposer | DFlashProposer | DraftModelProposer
@@ -5554,6 +5557,7 @@ class GPUModelRunner(
             if self.speculative_config and (
                 self.speculative_config.use_eagle()
                 or self.speculative_config.uses_draft_model()
+                or self.speculative_config.uses_universal_draft()
                 or self.speculative_config.uses_extract_hidden_states()
             ):
                 assert isinstance(
@@ -6340,6 +6344,7 @@ class GPUModelRunner(
         if self.speculative_config and (
             self.speculative_config.use_eagle()
             or self.speculative_config.uses_draft_model()
+            or self.speculative_config.uses_universal_draft()
         ):
             assert isinstance(
                 self.drafter, EagleProposer | DFlashProposer | DraftModelProposer
